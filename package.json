@@ -1,0 +1,22 @@
+{
+  "name": "rest-shop",
+  "version": "1.0.0",
+  "description": "A node.js RESTful API tutorial",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cerenkeklik/node-rest-shop.git"
+  },
+  "author": "Ceren",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cerenkeklik/node-rest-shop/issues"
+  },
+  "homepage": "https://github.com/cerenkeklik/node-rest-shop#readme",
+  "dependencies": {
+    "express": "^4.17.2"
+  }
+}
