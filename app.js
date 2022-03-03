@@ -1,5 +1,3 @@
-//16.41 dakika
-
 const express = require('express') // node.js web app framework
 const app = express()
 const morgan = require('morgan') // a node.js and express.js middleware to log HTTP requests and errors, and simplifies the process
@@ -17,6 +15,7 @@ mongoose.connect(
 )
 
 app.use(morgan('dev'))
+app.use('/uploads', express.static('uploads')) //makes uploads file accessable everywhere
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 

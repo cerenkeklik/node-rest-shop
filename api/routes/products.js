@@ -1,26 +1,55 @@
 const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) { 
+    cb(null, './uploads/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + file.originalname)
+  },
+})
+
+const fileFilter = (req, file, cb) => {
+
+  if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
+    cb(null, true) //will store the file
+  }else{
+    cb(new Error('You should upload jpep or png.'), false) // ignore the file not stored
+  }
+}
+
+const upload = multer({ 
+  storage: storage , 
+  limits: {
+  fileSize: 1024 * 1024 * 5
+},
+  fileFilter: fileFilter
+})
 
 const Product = require('../models/product')
 
 router.get('/', (req, res, next) => {
-  Product.find().select('_id name price')
+  Product.find()
+    .select('_id name price productImage')
     .exec()
     .then((docs) => {
-      const response  = {
+      const response = {
         count: docs.length,
-        products: docs.map(doc =>{
+        products: docs.map((doc) => {
           return {
             name: doc.name,
             price: doc.price,
+            productImage: doc.productImage,
             _id: doc._id,
             request: {
-              method: "GET",
-              url: 'http://localhost:3000/products/'+ doc._id
-            }
+              method: 'GET',
+              url: 'http://localhost:3000/products/' + doc._id,
+            },
           }
-        })
+        }),
       }
       // if (doc.length >= 0) {
       res.status(200).json(response)
@@ -38,11 +67,12 @@ router.get('/', (req, res, next) => {
     })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', upload.single('productImage'), (req, res, next) => {
   const product = new Product({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
     price: req.body.price,
+    productImage: req.file.path
   })
 
   product
@@ -55,9 +85,9 @@ router.post('/', (req, res, next) => {
           price: result.price,
           _id: result._id,
           request: {
-            type: "POST",
-            url: "http://localhost:3000/products/" + result._id
-          }
+            type: 'POST',
+            url: 'http://localhost:3000/products/' + result._id,
+          },
         },
       })
     })
@@ -72,16 +102,16 @@ router.post('/', (req, res, next) => {
 router.get('/:productId', (req, res, next) => {
   const id = req.params.productId
   Product.findById(id)
-  .select('name price _id')
+    .select('name price _id productImage')
     .exec()
     .then((doc) => {
       if (doc) {
         res.status(200).json({
-          product: doc, 
+          product: doc,
           request: {
             type: 'GET',
-            url: "http://localhost:3000/products/" + doc._id
-          }
+            url: 'http://localhost:3000/products/' + doc._id,
+          },
         })
       } else {
         res.status(404).json({
@@ -109,11 +139,11 @@ router.patch('/:productId', (req, res, next) => {
         message: 'Product updated.',
         product: {
           name: req.body.newName,
-          price: req.body.newPrice
+          price: req.body.newPrice,
         },
         request: {
           type: 'PATCH',
-          url: 'http://localhost:3000/products/' + id
+          url: 'http://localhost:3000/products/' + id,
         },
       })
     })
@@ -123,7 +153,6 @@ router.patch('/:productId', (req, res, next) => {
         error: err,
       })
     })
-
 })
 
 router.delete('/:productId', (req, res, next) => {
@@ -135,10 +164,11 @@ router.delete('/:productId', (req, res, next) => {
         message: 'Product deleted.',
         request: {
           type: 'POST',
-          url: "http://localhost:3000/products/",
-          body: {name: 'String', price: 'Number'}
-        }
-      }) })
+          url: 'http://localhost:3000/products/',
+          body: { name: 'String', price: 'Number' },
+        },
+      })
+    })
     .catch((err) => {
       console.log(err)
       res.status(500).json({ error: err })
