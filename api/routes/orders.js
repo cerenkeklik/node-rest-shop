@@ -1,6 +1,4 @@
-const { request } = require('express')
 const express = require('express')
-const req = require('express/lib/request')
 const router = express.Router()
 const mongoose = require('mongoose')
 
